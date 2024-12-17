@@ -10,8 +10,8 @@
 
   --success-color: #46af51;
   --unsuccess-color: #e84646;
-  --second-color: #161616;
-  --main-color: rgb(67, 41, 218);
+  --second-color: rgba(36, 37, 39, 0.75);
+  --main-color: white;
   --text-color: black;
 
   color: var(--text-color);
@@ -47,8 +47,8 @@ h4 {
 
 /* SCROLL */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track,
 ::-webkit-scrollbar-corner {

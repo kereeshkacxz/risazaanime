@@ -1,6 +1,10 @@
 <template>
   <div class="studios_wrapper">
-    <div class="studio" v-for="(studio, index) in studios">
+    <div
+      class="studio"
+      v-for="(studio, index) in studios"
+      @click="router.push(`/studio/${studio.id}`)"
+    >
       <NuxtImg
         :src="
           studio.filepath
@@ -8,6 +12,7 @@
             : 'template.jpg'
         "
         class="studio_image"
+        preload
       />
       <p class="title white">{{ studio.name }}</p>
       <p class="subtitle white">{{ studio.years_work }}</p>
@@ -16,6 +21,7 @@
   </div>
 </template>
 <script setup>
+const router = useRouter();
 const { $api } = useNuxtApp();
 const studios = ref([]);
 async function fetchData() {
@@ -72,13 +78,18 @@ onMounted(() => {
 }
 .studio {
   padding: 10px;
-  background-color: rgba(36, 37, 39, 0.75);
+  background-color: var(--second-color);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 240px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.studio:hover {
+  background-color: rgba(20, 21, 22, 0.75);
 }
 .description {
   margin-top: 5px;

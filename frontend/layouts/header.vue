@@ -32,20 +32,44 @@
         >
       </div>
     </div>
-    <!-- <transition name="slide">
+    <transition name="slide" class="mobile">
       <div class="navbar" :class="{ active: isMenuOpen }">
-        <NuxtLink
-          v-for="(key, i) in Object.keys(pages)"
-          :key="i"
-          :to="`/${key}`"
-          :class="{
-            active_page: useRoute().name === key,
-            navbar_btn: useRoute().name !== key,
-          }"
-          >{{ pages[key] }}</NuxtLink
-        >
+        <div class="navbar_wrapper">
+          <NuxtLink to="/" class="link" @click="toggleMenu">
+            <NuxtImg src="home.png" class="image" preload />
+            Главная
+          </NuxtLink>
+          <NuxtLink to="/news" class="link" @click="toggleMenu">
+            <NuxtImg src="news.png" class="image" preload />
+            Новости
+          </NuxtLink>
+          <NuxtLink to="/about" class="link" @click="toggleMenu">
+            <NuxtImg src="about.png" class="image" preload />
+            О нас
+          </NuxtLink>
+          <NuxtLink to="/faq" class="link" @click="toggleMenu">
+            <NuxtImg src="faq.png" class="image" preload />
+            Часто задаваемые вопросы
+          </NuxtLink>
+          <NuxtLink to="/title" class="link new_block" @click="toggleMenu">
+            <NuxtImg src="title.png" class="image" preload />
+            Тайтлы
+          </NuxtLink>
+          <NuxtLink to="/studio" class="link" @click="toggleMenu">
+            <NuxtImg src="studio.png" class="image" preload />
+            Студии
+          </NuxtLink>
+          <NuxtLink to="/review" class="link" @click="toggleMenu">
+            <NuxtImg src="review.png" class="image" preload />
+            Оценки
+          </NuxtLink>
+          <NuxtLink to="/review/new" class="link new_block">
+            <NuxtImg src="new_review.png" class="image" preload />
+            Оценить аниме
+          </NuxtLink>
+        </div>
       </div>
-    </transition> -->
+    </transition>
     <div class="mobile">
       <div class="user" @click="router.push('/profile')">
         <NuxtImg class="user_image" src="user.png" />
@@ -161,7 +185,7 @@ const enableScroll = () => {
   font-weight: 400;
 }
 .user {
-  background-color: rgba(36, 37, 39, 0.75);
+  background-color: var(--second-color);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -257,5 +281,53 @@ const enableScroll = () => {
 .authorization {
   display: flex;
   gap: 20px;
+}
+.navbar {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  gap: 20px;
+  top: calc(-100vh);
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  border-bottom: 1px solid white;
+  z-index: 5;
+  transition: all 0.5s ease;
+  align-items: center;
+  justify-content: center;
+}
+.navbar.active {
+  background-color: black;
+  top: 0px;
+}
+
+.image {
+  aspect-ratio: 1/1;
+  height: 37px;
+  cursor: pointer;
+  padding: 5px;
+}
+.navbar_wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.link {
+  color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  font-weight: 400;
+}
+.link:hover {
+  border-radius: 5px;
+  transition: all 0.3s;
+  background-color: var(--second-color);
+}
+.new_block {
+  margin-top: 30px;
 }
 </style>

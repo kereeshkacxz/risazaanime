@@ -2,14 +2,17 @@ from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
-from user import User, register_user, login_user
+from user import User, register_user, login_user, UserDB, upload_image_user
 from file import upload_image, get_image
 from database import SessionLocal
 import jwt
 from datetime import datetime, timedelta
 from starlette.middleware.cors import CORSMiddleware
 import os
-from studio import StudioUploader, post_studio, get_studio, get_all_studios, upload_image_studio
+from studio import StudioUploader, post_studio, get_studio, get_all_studios, upload_image_studio, get_title_of_studio, Title
+from title import post_title, get_title, get_all_titles, upload_image_title
+from review import Review, post_review, get_review, get_all_reviews, get_review_of_titles, get_review_of_user, get_mark_of_title
+
 app = FastAPI()
 
 app.add_middleware(
@@ -52,7 +55,7 @@ def login(user: User, db: Session = Depends(get_db)):
         return result
 
 @app.get("/user/me", response_model=dict)
-async def read_users_me(token: str = Depends(oauth2_scheme)):
+async def read_users_me(token: str = Depends(oauth2_scheme),  db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
@@ -65,7 +68,17 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
     except jwt.PyJWTError:
         raise credentials_exception
-    return {"username": username}
+    
+    db_user = db.query(UserDB).filter(UserDB.username == username).first()
+    filepath = None
+    if db_user.image_id:
+        filepath = get_image(db_user.image_id, db)["filepath"]
+    return {"username": username, "filepath": filepath}
+
+@app.post("/user/{username}/update_image", response_description="Update user's image", response_model=dict)
+def post_user_image(username: str, db: Session = Depends(get_db), file: UploadFile = File(...)):
+    return upload_image_user(username, db, file)
+
 
 @app.get("/statistics", response_description="Get site statistics", response_model=dict)
 def statistics():
@@ -83,7 +96,6 @@ async def get_image_route(image_id: int, db: Session = Depends(get_db)):
 @app.get("/static/{folder}/{file_name}", response_description="Get a file from static folder")
 async def get_static_file(folder: str, file_name: str):
     file_path = os.path.join("static/"+folder, file_name)
-    print(file_path)
     if os.path.exists(file_path):
         return FileResponse(file_path)
     else:
@@ -108,3 +120,54 @@ def get_studio_route(db: Session = Depends(get_db)):
 @app.post("/studio/{studio_id}/update_image", response_description="Update studio's image", response_model=dict)
 def post_studio_image(studio_id: int, db: Session = Depends(get_db), file: UploadFile = File(...)):
     return upload_image_studio(studio_id, db, file)
+
+@app.get("/studio/{studio_id}/titles", response_description="Get studio's titles", response_model=list[dict])
+def get_title_of_studio_route(studio_id: int, db: Session = Depends(get_db)):
+    return get_title_of_studio(studio_id, db)
+
+@app.post("/title", response_description="Post the title", response_model=dict)
+def post_title_route(
+    title: Title, 
+    db: Session = Depends(get_db),
+):
+    return post_title(title, db)
+
+@app.get("/title/{title_id}", response_description="Get the title", response_model=dict)
+def get_title_route(title_id: int, db: Session = Depends(get_db)):
+    return get_title(title_id, db)
+
+@app.get("/titles", response_description="Get all titles", response_model=list[dict])
+def get_all_titles_route(db: Session = Depends(get_db)):
+    return get_all_titles(db)
+
+@app.post("/title/{title_id}/update_image", response_description="Update title's image", response_model=dict)
+def post_title_image(title_id: int, db: Session = Depends(get_db), file: UploadFile = File(...)):
+    return upload_image_title(title_id, db, file)
+
+
+@app.post("/review", response_description="Post the review", response_model=dict)
+def post_review_route(
+    review: Review, 
+    db: Session = Depends(get_db),
+):
+    return post_review(review, db)
+
+@app.get("/review/{review_id}", response_description="Get the review", response_model=dict)
+def get_review_route(review_id: int, db: Session = Depends(get_db)):
+    return get_review(review_id, db)
+
+@app.get("/reviews", response_description="Get all reviews", response_model=list[dict])
+def get_all_reviews_route(db: Session = Depends(get_db)):
+    return get_all_reviews(db)
+
+@app.get("/title/{title_id}/reviews", response_description="Get title's review", response_model=list[dict])
+def get_review_of_titles_route(title_id: int, db: Session = Depends(get_db)):
+    return get_review_of_titles(title_id, db)
+
+@app.get("/user/{username}/reviews", response_description="Get user's review", response_model=list[dict])
+def get_review_of_user_route(username: str, db: Session = Depends(get_db)):
+    return get_review_of_user(username, db)
+
+@app.get("/title/{title_id}/statistics", response_description="Get title's statistics", response_model=dict)
+def get_mark_of_title_route(title_id: int, db: Session = Depends(get_db)):
+    return get_mark_of_title(title_id, db)

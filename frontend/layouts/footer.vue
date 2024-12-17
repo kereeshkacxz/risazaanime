@@ -42,7 +42,7 @@ onMounted(() => {
   color: var(--white-color);
 }
 .block {
-  background-color: rgba(36, 37, 39, 0.75);
+  background-color: var(--second-color);
   width: 200px;
   height: 40px;
   display: flex;
