@@ -1,6 +1,6 @@
 <template>
   <div class="profile_wrapper">
-    <p style="color: white">{{ login }}</p>
+    <h1 class="white">{{ login }}</h1>
     <NuxtImg
       :src="tmpAvatar ? 'http://localhost:8000/' + tmpAvatar : 'template.jpg'"
       class="avatar"
@@ -110,6 +110,10 @@ onMounted(() => {
 });
 </script>
 <style scoped>
+.white {
+  color: white;
+  font-weight: 600;
+}
 .login {
   font-weight: 500;
   padding: 0px 20px;

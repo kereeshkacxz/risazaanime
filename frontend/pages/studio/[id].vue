@@ -13,7 +13,10 @@
     </div>
     <h1 class="white">{{ studio.name }}</h1>
     <div class="blocks_wrapper">
-      <div class="marks_wrapper"></div>
+      <div class="marks_wrapper">
+        <h1 class="mark">Средняя оценка:</h1>
+        <h1 class="mark big">{{ mark }}</h1>
+      </div>
       <div class="description_wrapper">
         <h1 class="white">Описание:</h1>
         <p class="white">{{ studio.description }}</p>
@@ -52,6 +55,7 @@ const idStudio = route.params.id || null;
 const { $api } = useNuxtApp();
 const studio = ref({});
 const titles = ref([]);
+const mark = ref(0);
 
 async function fetchData() {
   try {
@@ -69,6 +73,13 @@ async function fetchData() {
       },
     });
     titles.value = responseTitles.data;
+    const responseMark = await $api.get(`/studio/${idStudio}/statistics`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    mark.value = responseMark.data.mark;
   } catch (error) {
     console.error(error);
     createNotification(`Произошла какая-то ошибка :Х`, "error");
@@ -125,6 +136,14 @@ onMounted(() => {
   width: 100%;
   gap: 30px;
 }
+.mark {
+  color: white;
+  font-weight: 800;
+}
+.big {
+  font-size: 64px;
+  font-family: "Yuji Mai", serif;
+}
 .marks_wrapper {
   display: flex;
   background-color: var(--second-color);
@@ -132,6 +151,9 @@ onMounted(() => {
   height: 200px;
   border-radius: 15px;
   padding: 20px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 .description_wrapper {
   display: flex;

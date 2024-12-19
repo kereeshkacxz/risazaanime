@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from fastapi import HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from database import Base
-from file import upload_image
+from file import upload_image, get_image
 from file import ImageDB
 from title import TitleDB
 from user import UserDB
@@ -69,6 +69,23 @@ def get_review(review_id: int, db: Session):
     db_review = db.query(ReviewDB).filter(ReviewDB.id == review_id).first()
     if not db_review:
         raise HTTPException(status_code=404, detail="Studio not found")
+    
+    db_user = db.query(UserDB).filter(UserDB.username == db_review.username).first()
+    filepath_user = None
+    
+    if db_user.image_id:
+        filepath_user = get_image(db_user.image_id, db)["filepath"]
+
+    db_title = db.query(TitleDB).filter(TitleDB.id == db_review.title_id).first()
+    
+    if not db_title:
+        raise HTTPException(status_code=404, detail="Title not found")
+    
+    filepath_title = None
+    if db_title.image_id:
+        image = db.query(ImageDB).filter(ImageDB.id == db_title.image_id).first()
+        filepath_title = image.filepath if image else None 
+
     return {
         "title_id":db_review.title_id,
         "username":db_review.username,
@@ -79,7 +96,9 @@ def get_review(review_id: int, db: Session):
         "music":db_review.music,
         "description":db_review.description,
         "title":db_review.title,
-        "mark":db_review.mark
+        "mark":db_review.mark,
+        "filepath_user": filepath_user,
+        "filepath_title": filepath_title
     }
 
 
@@ -88,6 +107,22 @@ def get_all_reviews(db: Session):
     reviews = []
 
     for db_review in db_reviews:
+        db_user = db.query(UserDB).filter(UserDB.username == db_review.username).first()
+        filepath_user = None
+        
+        if db_user.image_id:
+            filepath_user = get_image(db_user.image_id, db)["filepath"]
+
+        db_title = db.query(TitleDB).filter(TitleDB.id == db_review.title_id).first()
+        
+        if not db_title:
+            raise HTTPException(status_code=404, detail="Title not found")
+        
+        filepath_title = None
+        if db_title.image_id:
+            image = db.query(ImageDB).filter(ImageDB.id == db_title.image_id).first()
+            filepath_title = image.filepath if image else None 
+
         reviews.append({
         "title_id":db_review.title_id,
         "username":db_review.username,
@@ -98,8 +133,10 @@ def get_all_reviews(db: Session):
         "music":db_review.music,
         "description":db_review.description,
         "title":db_review.title,
-        "mark":db_review.mark
-        })
+        "mark":db_review.mark,
+        "filepath_user": filepath_user,
+        "filepath_title": filepath_title
+    })
 
     return reviews
 
@@ -111,6 +148,21 @@ def get_review_of_titles(title_id: int, db: Session):
     reviews = db.query(ReviewDB).filter(ReviewDB.title_id == title_id).all()
     reviews_list = []
     for db_review in reviews:
+        db_user = db.query(UserDB).filter(UserDB.username == db_review.username).first()
+        filepath_user = None
+        
+        if db_user.image_id:
+            filepath_user = get_image(db_user.image_id, db)["filepath"]
+
+        db_title = db.query(TitleDB).filter(TitleDB.id == db_review.title_id).first()
+        
+        if not db_title:
+            raise HTTPException(status_code=404, detail="Title not found")
+        
+        filepath_title = None
+        if db_title.image_id:
+            image = db.query(ImageDB).filter(ImageDB.id == db_title.image_id).first()
+            filepath_title = image.filepath if image else None 
         reviews_list.append({
         "title_id":db_review.title_id,
         "username":db_review.username,
@@ -121,8 +173,10 @@ def get_review_of_titles(title_id: int, db: Session):
         "music":db_review.music,
         "description":db_review.description,
         "title":db_review.title,
-        "mark":db_review.mark
-        })
+        "mark":db_review.mark,
+        "filepath_user": filepath_user,
+        "filepath_title": filepath_title
+    })
     
     return reviews_list
 
@@ -134,6 +188,21 @@ def get_review_of_user(username: int, db: Session):
     reviews = db.query(ReviewDB).filter(ReviewDB.username == username).all()
     reviews_list = []
     for db_review in reviews:
+        db_user = db.query(UserDB).filter(UserDB.username == db_review.username).first()
+        filepath_user = None
+        
+        if db_user.image_id:
+            filepath_user = get_image(db_user.image_id, db)["filepath"]
+
+        db_title = db.query(TitleDB).filter(TitleDB.id == db_review.title_id).first()
+        
+        if not db_title:
+            raise HTTPException(status_code=404, detail="Title not found")
+        
+        filepath_title = None
+        if db_title.image_id:
+            image = db.query(ImageDB).filter(ImageDB.id == db_title.image_id).first()
+            filepath_title = image.filepath if image else None 
         reviews_list.append({
         "title_id":db_review.title_id,
         "username":db_review.username,
@@ -144,9 +213,10 @@ def get_review_of_user(username: int, db: Session):
         "music":db_review.music,
         "description":db_review.description,
         "title":db_review.title,
-        "mark":db_review.mark
+        "mark":db_review.mark,
+        "filepath_user": filepath_user,
+        "filepath_title": filepath_title
         })
-    
     return reviews_list
 
 def get_mark_of_title(title_id: int, db: Session):

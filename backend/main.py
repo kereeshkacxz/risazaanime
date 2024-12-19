@@ -75,6 +75,14 @@ async def read_users_me(token: str = Depends(oauth2_scheme),  db: Session = Depe
         filepath = get_image(db_user.image_id, db)["filepath"]
     return {"username": username, "filepath": filepath}
 
+@app.get("/user/get_by_username/{username}", response_model=dict)
+def read_users(username: str,  db: Session = Depends(get_db)):
+    db_user = db.query(UserDB).filter(UserDB.username == username).first()
+    filepath = None
+    if db_user.image_id:
+        filepath = get_image(db_user.image_id, db)["filepath"]
+    return {"username": username, "filepath": filepath, "reviews":get_review_of_user(username, db)}
+
 @app.post("/user/{username}/update_image", response_description="Update user's image", response_model=dict)
 def post_user_image(username: str, db: Session = Depends(get_db), file: UploadFile = File(...)):
     return upload_image_user(username, db, file)
@@ -171,3 +179,18 @@ def get_review_of_user_route(username: str, db: Session = Depends(get_db)):
 @app.get("/title/{title_id}/statistics", response_description="Get title's statistics", response_model=dict)
 def get_mark_of_title_route(title_id: int, db: Session = Depends(get_db)):
     return get_mark_of_title(title_id, db)
+
+@app.get("/studio/{studio_id}/statistics", response_description="Get studio's statistics", response_model=dict)
+def get_mark_of_studio_route(studio_id: int, db: Session = Depends(get_db)):
+    titles = get_title_of_studio(studio_id, db)
+    if len(titles) == 0:
+        return {"mark" : 0}
+    mark = 0
+    count = 0
+    for i in titles:
+        cur_mark = get_mark_of_title(i.get("id"), db).get("mark")
+        mark += cur_mark
+        if cur_mark > 0:
+            count += 1
+    count = max(1, count)
+    return {"mark" : int(mark/count)}
